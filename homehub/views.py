@@ -14,6 +14,19 @@ from .models import Video
 from .video_manager import *
 
 
+def update_views(mode=False):
+    """
+    Update views in the labels table. This will enable to do recommendations based upon views
+    :param mode:
+        False - (Hard update): This will check for every video and update the category accordingly.
+                Used when new video is deleted or labels are changed.
+        video_id - (Soft update): This will just update the rows relevant to the given video
+                   Used when a video is watched.
+    :return: None
+    """
+    pass
+
+
 def remove_folder(folder):
     if os.path.exists(folder) and os.path.isdir(folder):
         shutil.rmtree(folder)
