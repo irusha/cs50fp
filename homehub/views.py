@@ -117,6 +117,9 @@ def get_all_videos(request):
             except ObjectDoesNotExist:
                 raise BadRequest("Invalid video id")
 
+            video_obj.views += 1
+            video_obj.save()
+
             return JsonResponse(
                 {
                     "title": video_obj.title,
