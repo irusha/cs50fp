@@ -1,3 +1,4 @@
+import time
 import traceback
 import uuid
 from datetime import date
@@ -11,12 +12,6 @@ from django.core.files.storage import FileSystemStorage
 
 from .models import Video
 from .video_manager import *
-from django.db import models
-
-
-class Labels(models.Model):
-    label = models.CharField(max_length=50)
-    views = models.IntegerField()
 
 
 def remove_folder(folder):
@@ -34,6 +29,7 @@ def say_hello(request):
 def upload(request):
     if request.method == "POST":
         uploaded_files = request.FILES.getlist("file")
+        labels = request.POST.getlist('labels')
 
         if len(uploaded_files) == 0:
             return HttpResponse("InvalidRequest")
@@ -49,10 +45,10 @@ def upload(request):
 
             unique_filename = str(uuid.uuid4().hex)
 
+            path = "media/videos/" + unique_filename
+
             _file = "media/videos/%s/video/" % unique_filename + unique_filename + "." + file_ext
             file_media_path = "videos/%s/video/" % unique_filename + unique_filename + "." + file_ext
-
-            path = "media/videos/" + unique_filename
 
             file_type = curr_file.content_type.split('/')[0]
 
@@ -98,6 +94,7 @@ def upload(request):
 
             except:
                 print("Database failed")
+                remove_folder(path)
                 traceback.print_exc()
 
         return JsonResponse({
@@ -107,6 +104,7 @@ def upload(request):
         return HttpResponse("what is this")
 
 
+@csrf_exempt
 def get_all_videos(request):
     if request.method == "GET":
         get_body = request.GET
@@ -139,9 +137,8 @@ def get_all_videos(request):
                 "views": row[7]
             })
 
-        print(request.GET)
-
         return JsonResponse(data_dict)
     else:
+        data = request.POST.getlist('laddbel')
+        print(data)
         return HttpResponse('Post')
-

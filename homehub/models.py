@@ -10,4 +10,7 @@ class Video(models.Model):
     length = models.IntegerField()
     views = models.IntegerField()
 
-# Create your models here.
+
+class Labels(models.Model):
+    label = models.CharField(max_length=50)
+    views = models.IntegerField()
