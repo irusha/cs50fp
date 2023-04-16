@@ -14,3 +14,8 @@ class Video(models.Model):
 class Labels(models.Model):
     label = models.CharField(max_length=50)
     views = models.IntegerField()
+
+
+class VideoLabels(models.Model):
+    video = models.IntegerField()
+    label = models.IntegerField()
