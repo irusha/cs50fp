@@ -1,4 +1,3 @@
-import time
 import traceback
 import uuid
 from datetime import date
@@ -10,7 +9,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import FileSystemStorage
 
-from .models import Video
+from .models import Video, Labels, VideoLabels
 from .video_manager import *
 
 
@@ -25,6 +24,40 @@ def update_views(mode=False):
     :return: None
     """
     pass
+
+
+def get_set_label_ids(_labels):
+    label_ids = []
+    for curr_label in _labels:
+        if curr_label != "":
+            if Labels.objects.filter(label=curr_label).exists():
+                label_ids.append(Labels.objects.get(label=curr_label).id)
+            else:
+                lab_obj = Labels.objects.create(label=curr_label, views=0)
+                lab_obj.save()
+                label_ids.append(Labels.objects.get(label=curr_label).id)
+
+    return label_ids
+
+
+def save_labels(video_id, label_ids):
+    vid_label_obj = VideoLabels.objects.filter(video=video_id)
+    if len(vid_label_obj) != 0:
+        for curr_obj in vid_label_obj:
+            curr_obj.delete()
+
+    for curr_id in label_ids:
+        vid_lbl_obj = VideoLabels.objects.create(video=video_id, label=curr_id)
+        vid_lbl_obj.save()
+
+
+def labels(request):
+    if request.method == "GET":
+        get_body = request.GET
+        get_set_label_ids(get_body.getlist('labels'))
+
+        return HttpResponse("OK")
+
 
 
 def remove_folder(folder):
@@ -42,7 +75,7 @@ def say_hello(request):
 def upload(request):
     if request.method == "POST":
         uploaded_files = request.FILES.getlist("file")
-        labels = request.POST.getlist('labels')
+        vid_labels = request.POST.getlist('labels')
 
         if len(uploaded_files) == 0:
             return HttpResponse("InvalidRequest")
@@ -104,6 +137,11 @@ def upload(request):
                     length=int(duration)
                 )
                 video.save()
+                vid_id = video.id
+
+                label_ids = get_set_label_ids(vid_labels)
+
+                save_labels(vid_id, label_ids)
 
             except:
                 print("Database failed")
@@ -111,13 +149,12 @@ def upload(request):
                 traceback.print_exc()
 
         return JsonResponse({
-            "failed_files": failed_files
+            "failed_files": failed_files,
         })
     else:
         return HttpResponse("what is this")
 
 
-@csrf_exempt
 def get_all_videos(request):
     if request.method == "GET":
         get_body = request.GET
