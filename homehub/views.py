@@ -13,17 +13,41 @@ from .models import Video, Labels, VideoLabels
 from .video_manager import *
 
 
-def update_views(mode=False):
+def update_views(video_id=-1):
     """
     Update views in the labels table. This will enable to do recommendations based upon views
-    :param mode:
-        False - (Hard update): This will check for every video and update the category accordingly.
+    :param video_id:
+        -1 - (Hard update): This will check for every video and update the category accordingly.
                 Used when new video is deleted or labels are changed.
         video_id - (Soft update): This will just update the rows relevant to the given video
                    Used when a video is watched.
     :return: None
     """
-    pass
+    if video_id == -1:
+        label_ids = [elements['id'] for elements in Labels.objects.values("id")]
+
+        for label in label_ids:
+            total_views = 0
+            videos = VideoLabels.objects.filter(label=label).values()
+            for video in videos:
+                current_video_id = video['video']
+                video_obj = Video.objects.filter(id=current_video_id)
+                views = video_obj.get().views
+                total_views += views
+
+            label_obj = Labels.objects.get(id=label)
+            label_obj.views = total_views
+            label_obj.save()
+        print("Uptated total views")
+
+    else:
+        vid_labels = VideoLabels.objects.filter(video=video_id).values()
+
+        for vid_label in vid_labels:
+            label_id = vid_label['label']
+            label_obj = Labels.objects.get(id=label_id)
+            label_obj.views += 1
+            label_obj.save()
 
 
 def get_set_label_ids(_labels):
@@ -59,7 +83,6 @@ def labels(request):
         return HttpResponse("OK")
 
 
-
 def remove_folder(folder):
     if os.path.exists(folder) and os.path.isdir(folder):
         shutil.rmtree(folder)
@@ -67,7 +90,7 @@ def remove_folder(folder):
 
 @csrf_exempt
 def say_hello(request):
-    print(request.FILES)
+    update_views()
     return HttpResponse('hello world')
 
 
@@ -137,8 +160,8 @@ def upload(request):
                     length=int(duration)
                 )
                 video.save()
-                vid_id = video.id
 
+                vid_id = video.id
                 label_ids = get_set_label_ids(vid_labels)
 
                 save_labels(vid_id, label_ids)
@@ -168,6 +191,7 @@ def get_all_videos(request):
                 raise BadRequest("Invalid video id")
 
             video_obj.views += 1
+            update_views(int(request.GET['video-id']))
             video_obj.save()
 
             return JsonResponse(
