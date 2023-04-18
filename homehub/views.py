@@ -73,12 +73,30 @@ def save_labels(video_id, label_ids):
     for curr_id in label_ids:
         vid_lbl_obj = VideoLabels.objects.create(video=video_id, label=curr_id)
         vid_lbl_obj.save()
+    update_views()
 
 
 def labels(request):
     if request.method == "GET":
         get_body = request.GET
-        get_set_label_ids(get_body.getlist('labels'))
+        lbls = get_set_label_ids(get_body.getlist('labels'))
+
+        if len(lbls) == 0:
+            _labels = Labels.objects.values('label')
+            return JsonResponse({"labels": [label['label'] for label in _labels]})
+
+        req_id = 0
+        if 'video-id' in get_body:
+            try:
+                req_id = int(request.GET['video-id'])
+                Video.objects.get(id=req_id)
+            except ValueError:
+                raise BadRequest("Invalid Request")
+            except ObjectDoesNotExist:
+                raise BadRequest("Invalid video id")
+
+        print(lbls)
+        save_labels(req_id, lbls)
 
         return HttpResponse("OK")
 
