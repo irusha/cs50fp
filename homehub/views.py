@@ -76,16 +76,20 @@ def save_labels(video_id, label_ids):
     update_views()
 
 
+def check_label_is_used(label):
+    label_id = Labels.objects.get(label=label).id
+    return VideoLabels.objects.filter(label=label_id).exists()
+
+
 def labels(request):
     if request.method == "GET":
         get_body = request.GET
-        lbls = get_set_label_ids(get_body.getlist('labels'))
-
-        if len(lbls) == 0:
+        labels_list = get_body.getlist('labels')
+        if len(labels_list) == 0 and 'video-id' not in get_body and 'remove' not in get_body:
             _labels = Labels.objects.values('label')
             return JsonResponse({"labels": [label['label'] for label in _labels]})
 
-        req_id = 0
+        label_ids = get_set_label_ids(labels_list)
         if 'video-id' in get_body:
             try:
                 req_id = int(request.GET['video-id'])
@@ -95,10 +99,23 @@ def labels(request):
             except ObjectDoesNotExist:
                 raise BadRequest("Invalid video id")
 
-        print(lbls)
-        save_labels(req_id, lbls)
+            print(label_ids)
+            save_labels(req_id, label_ids)
 
-        return HttpResponse("OK")
+            return HttpResponse("OK")
+
+        try:
+            print(request.GET['remove'])
+            if not check_label_is_used(request.GET['remove']):
+                label = Labels.objects.get(label=request.GET['remove'])
+                label.delete()
+                return HttpResponse("OK")
+            else:
+                return HttpResponse("Label is already in use")
+        except ObjectDoesNotExist:
+            raise BadRequest("Invalid label to remove")
+
+
 
 
 def remove_folder(folder):
