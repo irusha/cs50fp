@@ -50,6 +50,15 @@ def update_views(video_id=-1):
             label_obj.save()
 
 
+def get_label_ids(_labels):
+    label_ids = []
+    for curr_label in _labels:
+        if curr_label != "":
+            if Labels.objects.filter(label=curr_label).exists():
+                label_ids.append(Labels.objects.get(label=curr_label).id)
+    return label_ids
+
+
 def get_set_label_ids(_labels):
     label_ids = []
     for curr_label in _labels:
@@ -116,8 +125,6 @@ def labels(request):
             raise BadRequest("Invalid label to remove")
 
 
-
-
 def remove_folder(folder):
     if os.path.exists(folder) and os.path.isdir(folder):
         shutil.rmtree(folder)
@@ -145,21 +152,21 @@ def upload(request):
             print(date.today())
 
             file_name = curr_file.name
-            file_ext = str(file_name).split('.')[-1]
+            file_type = curr_file.content_type.split('/')[0]
 
             unique_filename = str(uuid.uuid4().hex)
 
             path = "media/videos/" + unique_filename
 
-            _file = "media/videos/%s/video/" % unique_filename + unique_filename + "." + file_ext
-            file_media_path = "videos/%s/video/" % unique_filename + unique_filename + "." + file_ext
-
-            file_type = curr_file.content_type.split('/')[0]
-
             if file_type != "video":
                 failed_files[file_name] = "InvalidType"
                 remove_folder(path)
                 continue
+
+            file_ext = str(file_name).split('.')[-1]
+
+            _file = "media/videos/%s/video/" % unique_filename + unique_filename + "." + file_ext
+            file_media_path = "videos/%s/video/" % unique_filename + unique_filename + "." + file_ext
 
             make_folder("media/videos/%s/video/" % unique_filename)
             fs.save(file_media_path, curr_file)
@@ -218,7 +225,7 @@ def get_all_videos(request):
         get_body = request.GET
         if 'video-id' in get_body:
             try:
-                req_id = int(request.GET['video-id'])
+                req_id = int(get_body['video-id'])
                 video_obj = Video.objects.get(id=req_id)
             except ValueError:
                 raise BadRequest("Invalid Request")
@@ -250,7 +257,52 @@ def get_all_videos(request):
             })
 
         return JsonResponse(data_dict)
-    else:
-        data = request.POST.getlist('laddbel')
-        print(data)
-        return HttpResponse('Post')
+
+
+def video_object(videos, request):
+    data = []
+    for video in videos:
+        data.append({
+            "id": video.id,
+            "title": video.title,
+            "preview": request.get_host() + "/" + video.prev_loc,
+            "thumbnail": request.get_host() + "/" + video.thumb_loc,
+            "length": video.length,
+            "views": video.views
+        })
+    return data
+
+
+def search(request):
+    if request.method == "GET":
+        get_body = request.GET
+        if len(get_body) == 0:
+            return HttpResponse("Search page")
+        if 'q' not in get_body:
+            return HttpResponse("You ain't searching innit?")
+
+        query = get_body['q']
+        if query == "":
+            return JsonResponse({})
+
+        filters = request.GET.getlist('filter')
+        print(filters)
+        videos = Video.objects.filter(title__contains=query)
+        if len(filters) == 0:
+            data_dict = {"data": video_object(videos, request), "query": query}
+            return JsonResponse(data_dict)
+        for _filter in filters:
+            if not Labels.objects.filter(label=_filter).exists():
+                return HttpResponse("Invalid filter", status=400)
+
+        label_ids = get_label_ids(filters)
+        filtered_videos = []
+        filtered_videos_obj = []
+        for label_id in label_ids:
+            video_ids = [curr_id['video'] for curr_id in VideoLabels.objects.filter(label=label_id).values('video')]
+            filtered_videos += video_ids
+        for video in videos:
+            if video.id in filtered_videos:
+                filtered_videos_obj.append(video)
+        data_dict = {"data": video_object(filtered_videos_obj, request), "query": query}
+        return JsonResponse(data_dict)

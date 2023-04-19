@@ -8,6 +8,7 @@ urlpatterns = [
     path('upload/', views.upload),
     path('label/', views.labels),
     path('library/', views.get_all_videos),
+    path('search/', views.search),
 ]
 
 if settings.DEBUG:
