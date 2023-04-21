@@ -6,6 +6,7 @@ from django.core.exceptions import BadRequest, ObjectDoesNotExist
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.http import HttpResponse
+from django.utils.datastructures import MultiValueDictKeyError
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import FileSystemStorage
 
@@ -90,6 +91,14 @@ def check_label_is_used(label):
     return VideoLabels.objects.filter(label=label_id).exists()
 
 
+def recommendations(requests):
+    most_viewed = Labels.objects.all().order_by('-views').values()[:3]
+    least_viewed = Labels.objects.all().order_by('views').values()[:3]
+
+
+    return HttpResponse(str(least_viewed))
+
+
 def labels(request):
     if request.method == "GET":
         get_body = request.GET
@@ -114,7 +123,6 @@ def labels(request):
             return HttpResponse("OK")
 
         try:
-            print(request.GET['remove'])
             if not check_label_is_used(request.GET['remove']):
                 label = Labels.objects.get(label=request.GET['remove'])
                 label.delete()
@@ -123,6 +131,8 @@ def labels(request):
                 return HttpResponse("Label is already in use")
         except ObjectDoesNotExist:
             raise BadRequest("Invalid label to remove")
+        except MultiValueDictKeyError:
+            raise BadRequest()
 
 
 def remove_folder(folder):
@@ -278,12 +288,9 @@ def search(request):
         get_body = request.GET
         if len(get_body) == 0:
             return HttpResponse("Search page")
-        if 'q' not in get_body:
-            return HttpResponse("You ain't searching innit?")
-
-        query = get_body['q']
-        if query == "":
-            return JsonResponse({})
+        query = ""
+        if 'q' in get_body:
+            query = get_body['q']
 
         filters = request.GET.getlist('filter')
         print(filters)
