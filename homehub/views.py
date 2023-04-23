@@ -1,3 +1,4 @@
+import math
 import traceback
 import uuid
 from datetime import date
@@ -92,6 +93,20 @@ def check_label_is_used(label):
     return VideoLabels.objects.filter(label=label_id).exists()
 
 
+def video_object(videos, request):
+    data = []
+    for video in videos:
+        data.append({
+            "id": video.id,
+            "title": video.title,
+            "preview": request.get_host() + "/" + video.prev_loc,
+            "thumbnail": request.get_host() + "/" + video.thumb_loc,
+            "length": video.length,
+            "views": video.views
+        })
+    return data
+
+
 def recommendations_creator():
     most_viewed_labels = [label_id['id'] for label_id in Labels.objects.all().order_by('-views').values()[:3]]
     least_viewed_labels = [label_id['id'] for label_id in Labels.objects.all().order_by('views').values()[:3]]
@@ -119,8 +134,14 @@ def recommendations_creator():
     return recommended_videos
 
 
-def recommendations(requests):
-    return HttpResponse(str(recommendations_creator()))
+def recommendations(request):
+    recommended = recommendations_creator()
+    videos = []
+    for video in recommended:
+        print(video)
+        videos.append(Video.objects.get(id=video))
+    data_dict = {"data": video_object(videos, request)}
+    return JsonResponse(data_dict)
 
 
 def labels(request):
@@ -152,7 +173,7 @@ def labels(request):
                 label.delete()
                 return HttpResponse("OK")
             else:
-                return HttpResponse("Label is already in use")
+                return HttpResponse("Label is already in use", status=400)
         except ObjectDoesNotExist:
             raise BadRequest("Invalid label to remove")
         except MultiValueDictKeyError:
@@ -254,6 +275,23 @@ def upload(request):
         return HttpResponse("what is this")
 
 
+def paged_video_data(videos, request, page=-1, no_of_videos=15):
+    max_videos = len(videos)
+    starting_index = 0 if page == -1 else (page - 1) * no_of_videos
+    ending_index = max_videos if page == -1 else page * no_of_videos
+    data_dict = {"data": [], "pages": int(math.ceil(max_videos / no_of_videos))}
+    for row in videos[starting_index:ending_index]:
+        data_dict['data'].append({
+            "id": row[0],
+            "title": row[1],
+            "preview": request.get_host() + "/" + row[3],
+            "thumbnail": request.get_host() + "/" + row[4],
+            "length": row[6],
+            "views": row[7]
+        })
+    return data_dict
+
+
 def get_all_videos(request):
     if request.method == "GET":
         get_body = request.GET
@@ -279,39 +317,32 @@ def get_all_videos(request):
                 }
             )
 
-        data_dict = {"data": []}
-        for row in Video.objects.values_list():
-            data_dict['data'].append({
-                "id": row[0],
-                "title": row[1],
-                "preview": request.get_host() + "/" + row[3],
-                "thumbnail": request.get_host() + "/" + row[4],
-                "length": row[6],
-                "views": row[7]
-            })
+        max_amount = 15
 
-        return JsonResponse(data_dict)
+        if 'max' in get_body:
+            try:
+                max_amount = int(get_body['max'])
+            except ValueError:
+                max_amount = 15
 
+        if 'page' in get_body:
+            try:
+                page = int(get_body['page'])
+                if page < 1:
+                    raise BadRequest("Invalid page number")
+                return JsonResponse(
+                    paged_video_data(Video.objects.values_list(), request, page, no_of_videos=max_amount))
+            except ValueError:
+                raise BadRequest("Invalid page number")
 
-def video_object(videos, request):
-    data = []
-    for video in videos:
-        data.append({
-            "id": video.id,
-            "title": video.title,
-            "preview": request.get_host() + "/" + video.prev_loc,
-            "thumbnail": request.get_host() + "/" + video.thumb_loc,
-            "length": video.length,
-            "views": video.views
-        })
-    return data
+        return JsonResponse(paged_video_data(Video.objects.values_list(), request))
 
 
 def search(request):
     if request.method == "GET":
         get_body = request.GET
-        if len(get_body) == 0:
-            return HttpResponse("Search page")
+        if 'filter' not in get_body and 'q' not in get_body:
+            raise BadRequest("Invalid Request")
         query = ""
         if 'q' in get_body:
             query = get_body['q']
