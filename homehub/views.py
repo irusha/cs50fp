@@ -1,6 +1,7 @@
 import traceback
 import uuid
 from datetime import date
+import random
 
 from django.core.exceptions import BadRequest, ObjectDoesNotExist
 from django.shortcuts import render
@@ -91,12 +92,35 @@ def check_label_is_used(label):
     return VideoLabels.objects.filter(label=label_id).exists()
 
 
+def recommendations_creator():
+    most_viewed_labels = [label_id['id'] for label_id in Labels.objects.all().order_by('-views').values()[:3]]
+    least_viewed_labels = [label_id['id'] for label_id in Labels.objects.all().order_by('views').values()[:3]]
+    recommended_videos = []
+
+    for label in most_viewed_labels:
+        current_videos = VideoLabels.objects.filter(label=label)
+        videos_in_the_label = [obj.video for obj in current_videos]
+        random.shuffle(videos_in_the_label)
+
+        for video in videos_in_the_label:
+            if video not in recommended_videos:
+                recommended_videos.append(video)
+                break
+
+    for label in least_viewed_labels:
+        current_videos = VideoLabels.objects.filter(label=label)
+        videos_in_the_label = [obj.video for obj in current_videos]
+        random.shuffle(videos_in_the_label)
+
+        for video in videos_in_the_label:
+            if video not in recommended_videos:
+                recommended_videos.append(video)
+                break
+    return recommended_videos
+
+
 def recommendations(requests):
-    most_viewed = Labels.objects.all().order_by('-views').values()[:3]
-    least_viewed = Labels.objects.all().order_by('views').values()[:3]
-
-
-    return HttpResponse(str(least_viewed))
+    return HttpResponse(str(recommendations_creator()))
 
 
 def labels(request):
