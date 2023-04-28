@@ -8,6 +8,7 @@ from django.core.exceptions import BadRequest, ObjectDoesNotExist
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.http import HttpResponse
+from django.template import loader
 from django.utils.datastructures import MultiValueDictKeyError
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import FileSystemStorage
@@ -41,7 +42,7 @@ def update_views(video_id=-1):
             label_obj = Labels.objects.get(id=label)
             label_obj.views = total_views
             label_obj.save()
-        print("Uptated total views")
+        print("Updated total views")
 
     else:
         vid_labels = VideoLabels.objects.filter(video=video_id).values()
@@ -187,8 +188,7 @@ def remove_folder(folder):
 
 @csrf_exempt
 def say_hello(request):
-    update_views()
-    return HttpResponse('hello world')
+    return HttpResponse(loader.get_template('index.html').render())
 
 
 @csrf_exempt

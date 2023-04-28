@@ -4,7 +4,7 @@ This is the API for an improved version of **HomeHub** flask version.
 
 > This version of HomeHub is based on Django
 
-## Main modules in this api
+## Main modules in this API
 * Upload
 * Library
 * Labels
