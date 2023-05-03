@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import socket
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -83,14 +83,19 @@ DATABASES = {
     }
 }
 
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:4200',
-    'http://localhost:8000'
-]
+hostname = socket.gethostname()
+IPAddr = socket.gethostbyname(hostname)
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:4200',
-    'http://localhost:8000'
+    'http://localhost:80',
+    'http://localhost:8000',
+    'http://localhost:5000',
+    'http://' + IPAddr + ':4200',
+    'http://' + IPAddr + ':80',
+    'http://' + IPAddr + ':8000'
 ]
 
 CORS_ALLOW_HEADERS = [
