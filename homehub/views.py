@@ -321,7 +321,7 @@ def get_all_videos(request):
 
         if 'max' in get_body:
             try:
-                max_amount = int(get_body['max'])
+                max_amount = int(get_body['max']) if int(get_body['max']) > 0 else 15
             except ValueError:
                 max_amount = 15
 
