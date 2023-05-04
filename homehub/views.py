@@ -139,7 +139,6 @@ def recommendations(request):
     recommended = recommendations_creator()
     videos = []
     for video in recommended:
-        print(video)
         videos.append(Video.objects.get(id=video))
     data_dict = {"data": video_object(videos, request)}
     return JsonResponse(data_dict)
