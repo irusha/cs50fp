@@ -180,6 +180,12 @@ def labels(request):
             raise BadRequest()
 
 
+def get_video_labels(video_id):
+    label_ids = [obj.label for obj in VideoLabels.objects.filter(video=video_id)]
+    _labels = [Labels.objects.get(id=obj).label for obj in label_ids]
+    return _labels
+
+
 def remove_folder(folder):
     if os.path.exists(folder) and os.path.isdir(folder):
         shutil.rmtree(folder)
@@ -312,7 +318,8 @@ def get_all_videos(request):
                     "title": video_obj.title,
                     "url": request.get_host() + "/" + str(video_obj.location),
                     "views": video_obj.views,
-                    "date": video_obj.date
+                    "date": video_obj.date,
+                    "labels": get_video_labels(video_obj.id)
                 }
             )
 
