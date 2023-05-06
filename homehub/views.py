@@ -214,6 +214,17 @@ def upload(request):
             file_name = curr_file.name
             file_type = curr_file.content_type.split('/')[0]
 
+            if len(uploaded_files) == 1:
+                try:
+                    video_title = request.POST.getlist('name')[0]
+                except IndexError:
+                    video_title = file_name
+
+                if video_title == "":
+                    video_title = file_name
+            else:
+                video_title = file_name
+
             unique_filename = str(uuid.uuid4().hex)
 
             path = "media/videos/" + unique_filename
@@ -254,7 +265,7 @@ def upload(request):
 
             try:
                 video = Video.objects.create(
-                    title=file_name,
+                    title=video_title,
                     location=_file,
                     prev_loc="media/videos/%s/preview/%s" % (unique_filename, "preview.mp4"),
                     thumb_loc="media/videos/%s/thumbnail/%s" % (unique_filename, "thumbnail.jpg"),

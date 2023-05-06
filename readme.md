@@ -26,6 +26,7 @@ The files that is needed to be uploaded and the relevant labels of the currently
 #### The allowed keys are listed below
 * file - Includes single or multiple video files that is needed to be uploaded
 * labels - The labels that is needed to be set for the currently uploading files.
+* name - This will allow the user to use a custom name for the video. (Not applicable for bulk uploading)
 
 > The user can set multiple labels for the files by repeating label parameter in the request body
 > 
@@ -33,7 +34,6 @@ The files that is needed to be uploaded and the relevant labels of the currently
 > 
 > * Key = "Labels"    Value = "Action"
 > * Key = "Labels"    Value = "Action"
-> 
 
 ### Return values
 This URL will return a JSON that contains the names of the failed files
