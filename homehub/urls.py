@@ -10,6 +10,7 @@ urlpatterns = [
     path('library/', views.get_all_videos),
     path('search/', views.search),
     path('recom/', views.recommendations),
+    path('delete/', views.recommendations),
 ]
 
 if settings.DEBUG:

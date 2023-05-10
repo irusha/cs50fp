@@ -180,6 +180,10 @@ def labels(request):
             raise BadRequest()
 
 
+def delete_videos():
+    pass
+
+
 def get_video_labels(video_id):
     label_ids = [obj.label for obj in VideoLabels.objects.filter(video=video_id)]
     _labels = [Labels.objects.get(id=obj).label for obj in label_ids]
