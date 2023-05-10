@@ -218,12 +218,12 @@ def upload(request):
                 try:
                     video_title = request.POST.getlist('name')[0]
                 except IndexError:
-                    video_title = file_name
+                    video_title = file_name.split('.')[0]
 
                 if video_title == "":
-                    video_title = file_name
+                    video_title = file_name.split('.')[0]
             else:
-                video_title = file_name
+                video_title = file_name.split('.')[0]
 
             unique_filename = str(uuid.uuid4().hex)
 

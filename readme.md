@@ -32,8 +32,8 @@ The files that is needed to be uploaded and the relevant labels of the currently
 > 
 > Example: If you want to set "Action" and "Thriller" labels to the video that you are currently uploading,
 > 
-> * Key = "Labels"    Value = "Action"
-> * Key = "Labels"    Value = "Action"
+> * Key = "labels"    Value = "Action"
+> * Key = "labels"    Value = "Thriller"
 
 ### Return values
 This URL will return a JSON that contains the names of the failed files
