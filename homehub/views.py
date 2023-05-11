@@ -210,6 +210,7 @@ def upload(request):
             return HttpResponse("InvalidRequest")
 
         failed_files = {}
+        succeeded = {}
 
         for curr_file in uploaded_files:
             fs = FileSystemStorage()
@@ -282,6 +283,7 @@ def upload(request):
                 label_ids = get_set_label_ids(vid_labels)
 
                 save_labels(vid_id, label_ids)
+                succeeded[vid_id] = video_title
 
             except:
                 print("Database failed")
@@ -289,7 +291,8 @@ def upload(request):
                 traceback.print_exc()
 
         return JsonResponse({
-            "failed_files": failed_files,
+            "failedFiles": failed_files,
+            "succeeded": succeeded
         })
     else:
         return HttpResponse("what is this")
