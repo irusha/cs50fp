@@ -102,122 +102,123 @@
 </head>
 
 <body style="padding: 60px;">
-    <div></div>
-    <h1 id="homehub-v2">HomeHub V2</h1>
-    <p>This is the API for an improved version of <strong>HomeHub</strong> flask version.</p>
-    <blockquote>
-        <p>This version of HomeHub is based on Django</p>
-    </blockquote>
-    <h2 id="main-modules-in-this-api">Main modules in this API</h2>
+<div></div>
+<h1 id="homehub-v2">HomeHub V2</h1>
+<p>This is the API for an improved version of <strong>HomeHub</strong> flask version.</p>
+<blockquote>
+    <p>This version of HomeHub is based on Django</p>
+</blockquote>
+<h2 id="main-modules-in-this-api">Main modules in this API</h2>
+<ul>
+    <li>Upload</li>
+    <li>Library</li>
+    <li>Labels</li>
+    <li>Search</li>
+    <li>Recommendations</li>
+</ul>
+<h2 id="upload">Upload</h2>
+<p>The purpose of this module is to upload new videos to the server</p>
+<p>The user is able to do both bulk uploading or single file uploading and the labels set by the user will be
+    included into every video in the bulk.</p>
+<p>The user is able to upload video files longer than <strong>15 seconds</strong> using this module.</p>
+<p>In order to use this module, the user should <strong>&quot;POST&quot;</strong> a request to the
+    <em>&quot;/upload&quot;</em> URL with a body containing the files and the labels.</p>
+<h3 id="request-body">Request body</h3>
+<p>The files that is needed to be uploaded and the relevant labels of the currently uploading files are here.</p>
+<h4 id="the-allowed-keys-are-listed-below">The allowed keys are listed below</h4>
+<ul>
+    <li>file - Includes single or multiple video files that is needed to be uploaded</li>
+    <li>labels - The labels that is needed to be set for the currently uploading files.</li>
+    <li>name - This will allow the user to use a custom name for the video. (Not applicable for bulk uploading)</li>
+</ul>
+<blockquote>
+    <p>The user can set multiple labels for the files by repeating label parameter in the request body</p>
+    <p>Example: If you want to set &quot;Action&quot; and &quot;Thriller&quot; labels to the video that you are
+        currently uploading,</p>
     <ul>
-        <li>Upload</li>
-        <li>Library</li>
-        <li>Labels</li>
-        <li>Search</li>
-        <li>Recommendations</li>
+        <li>Key = &quot;labels&quot; Value = &quot;Action&quot;</li>
+        <li>Key = &quot;labels&quot; Value = &quot;Thriller&quot;</li>
     </ul>
-    <h2 id="upload">Upload</h2>
-    <p>The purpose of this module is to upload new videos to the server</p>
-    <p>The user is able to do both bulk uploading or single file uploading and the labels set by the user will be
-        included into every video in the bulk.</p>
-    <p>The user is able to upload video files longer than <strong>15 seconds</strong> using this module.</p>
-    <p>In order to use this module, the user should <strong>&quot;POST&quot;</strong> a request to the
-        <em>&quot;/upload&quot;</em> URL with a body containing the files and the labels.</p>
-    <h3 id="request-body">Request body</h3>
-    <p>The files that is needed to be uploaded and the relevant labels of the currently uploading files are here.</p>
-    <h4 id="the-allowed-keys-are-listed-below">The allowed keys are listed below</h4>
-    <ul>
-        <li>file - Includes single or multiple video files that is needed to be uploaded</li>
-        <li>labels - The labels that is needed to be set for the currently uploading files.</li>
-        <li>name - This will allow the user to use a custom name for the video. (Not applicable for bulk uploading)</li>
-    </ul>
-    <blockquote>
-        <p>The user can set multiple labels for the files by repeating label parameter in the request body</p>
-        <p>Example: If you want to set &quot;Action&quot; and &quot;Thriller&quot; labels to the video that you are
-            currently uploading,</p>
-        <ul>
-            <li>Key = &quot;labels&quot; Value = &quot;Action&quot;</li>
-            <li>Key = &quot;labels&quot; Value = &quot;Thriller&quot;</li>
-        </ul>
-    </blockquote>
-    <h3 id="return-values">Return values</h3>
-    <p>This URL will return a JSON that contains the names of the failed files</p>
-    <h3 id="failed-files">Failed files</h3>
-    <p>The following conditions will prevent the files from uploading</p>
-    <ul>
-        <li>The file is not a video file.</li>
-        <li>The file is unable to parse. (This could happen if the file is corrupt or the file is not compatible with
-            HomeHub)</li>
-    </ul>
-    <h2 id="library">Library</h2>
-    <p>This URL will enable the user to get the videos in the server. In order to access this module, the users should
-        do <strong>&quot;GET&quot;</strong> requests to the <em>&quot;/library&quot;</em> URL.</p>
-    <h3 id="url-methods">URL methods</h3>
-    <p>By directly executing the <em>&quot;/library&quot;</em> URL, the user can get every video in the server with a
-        JSON file.</p>
-    <p>Users can do pagination with the results by using the &quot;page&quot; parameter.</p>
-    <h4 id="parameters">Parameters</h4>
-    <p>The allowed parameters are listed below</p>
-    <ul>
-        <li>page - Sets the current page number</li>
-        <li>max - Sets the maximum amount of videos per page</li>
-    </ul>
-    <h3 id="return-values">Return values</h3>
-    <p>This module will return all the videos in the server when executed standalone. </p>
-    <p>Will return the relevant videos in the respective page and the maximum page number if the page number is given
-    </p>
-    <blockquote>
-        <p>The default number of items per page is 15</p>
-    </blockquote>
-    <h2 id="labels">Labels</h2>
-    <p>A video can have one or more videos. A label defines the characteristics of a video, and it will enable the users
-        to categorize videos based on their characteristics. </p>
-    <h4 id="labels-are-used-to-">Labels are used to:</h4>
-    <ul>
-        <li>Categorize videos depending on their characteristics</li>
-        <li>Search for videos with a certain label</li>
-        <li>Generating recommendations for the user</li>
-        <li>Filter search results</li>
-    </ul>
-    <h3 id="working-with-the-label-api">Working with the Label API</h3>
-    <p>Accessing <em>&quot;/labels&quot;</em> directly will return a list of labels that is currently created in the
-        HomeHub server.
-        Users will be enabled to,</p>
-    <ul>
-        <li>Remove unused labels</li>
-        <li>Change the labels of a video</li>
-        <li>Add new labels to a videos </li>
-        <li>Add new labels to the database</li>
-    </ul>
-    <h4 id="parameters-in-labels-module">Parameters in Labels module</h4>
-    <ul>
-        <li>&quot;remove&quot; - Removes the given label if it is not used.</li>
-        <li>&quot;video-id&quot; - The id of the video that the ids to be changed.</li>
-        <li>&quot;labels&quot; - The labels that is needed to be assigned to the video.</li>
-    </ul>
-    <blockquote>
-        <p><strong>Note:</strong> Just using the &#39;video-id&#39; parameter without the labels parameter will remove
-            any labels associated with the video</p>
-    </blockquote>
-    <h2 id="search">Search</h2>
-    <p>This module will enable the user to search videos using </p>
-    <ul>
-        <li>A search query</li>
-        <li>Label</li>
-        <li>or both</li>
-    </ul>
-    <p>In order to begin a search one or both of the following parameters must be given</p>
-    <ul>
-        <li>q - Search query should be given to this parameter</li>
-        <li>filter - The labels that is needed to filter the search results must be given to this parameter</li>
-    </ul>
-    <blockquote>
-        <p>This module is not usable standalone and one or both of the above parameters should be used</p>
-    </blockquote>
-    <h2 id="recommendations">Recommendations</h2>
-    <p>This module will generate maximum 6 recommendations for the users. The recommendations are based on the total
-        views that each module has</p>
-    <p>In order to use this module, the user have to use <em>&quot;/recom&quot;</em> route.</p>
+</blockquote>
+<h3 id="return-values">Return values</h3>
+<p>This URL will return a JSON that contains the names of the failed files as well as the names and the video ids of the
+    completed videos.</p>
+<h3 id="failed-files">Failed files</h3>
+<p>The following conditions will prevent the files from uploading</p>
+<ul>
+    <li>The file is not a video file.</li>
+    <li>The file is unable to parse. (This could happen if the file is corrupt or the file is not compatible with
+        HomeHub)
+    </li>
+</ul>
+<h2 id="library">Library</h2>
+<p>This URL will enable the user to get the videos in the server. In order to access this module, the users should
+    do <strong>&quot;GET&quot;</strong> requests to the <em>&quot;/library&quot;</em> URL.</p>
+<h3 id="url-methods">URL methods</h3>
+<p>By directly executing the <em>&quot;/library&quot;</em> URL, the user can get every video in the server with a
+    JSON file.</p>
+<p>Users can do pagination with the results by using the &quot;page&quot; parameter.</p>
+<h4 id="parameters">Parameters</h4>
+<p>The allowed parameters are listed below</p>
+<ul>
+    <li>page - Sets the current page number</li>
+    <li>max - Sets the maximum amount of videos per page</li>
+</ul>
+<h3 id="return-values">Return values</h3>
+<p>This module will return all the videos in the server when executed standalone. </p>
+<p>Will return the relevant videos in the respective page and the maximum page number if the page number is given
+</p>
+<blockquote>
+    <p>The default number of items per page is 15</p>
+</blockquote>
+<h2 id="labels">Labels</h2>
+<p>A video can have one or more labels. A label defines the characteristics of a video, and it will enable the users
+    to categorize videos based on their characteristics. </p>
+<h4 id="labels-are-used-to-">Labels are used to:</h4>
+<ul>
+    <li>Categorize videos depending on their characteristics</li>
+    <li>Generating recommendations for the user</li>
+    <li>Filter search results</li>
+</ul>
+<h3 id="working-with-the-label-api">Working with the Label API</h3>
+<p>Accessing <em>&quot;/labels&quot;</em> directly will return a list of labels that is currently created in the
+    HomeHub server.
+    Users will be enabled to,</p>
+<ul>
+    <li>Remove unused labels</li>
+    <li>Change the labels of a video</li>
+    <li>Add new labels to a videos</li>
+    <li>Add new labels to the database</li>
+</ul>
+<h4 id="parameters-in-labels-module">Parameters in Labels module</h4>
+<ul>
+    <li>&quot;remove&quot; - Removes the given label if it is not used.</li>
+    <li>&quot;video-id&quot; - The id of the video that the ids to be changed.</li>
+    <li>&quot;labels&quot; - The labels that is needed to be assigned to the video.</li>
+</ul>
+<blockquote>
+    <p><strong>Note:</strong> Just using the &#39;video-id&#39; parameter without the labels parameter will remove
+        any labels associated with the video</p>
+</blockquote>
+<h2 id="search">Search</h2>
+<p>This module will enable the user to search videos using </p>
+<ul>
+    <li>A search query</li>
+    <li>Label</li>
+    <li>or both</li>
+</ul>
+<p>In order to begin a search one or both of the following parameters must be given</p>
+<ul>
+    <li>q - Search query should be given to this parameter</li>
+    <li>filter - The labels that is needed to filter the search results must be given to this parameter</li>
+</ul>
+<blockquote>
+    <p>This module is not usable standalone and one or both of the above parameters must be used</p>
+</blockquote>
+<h2 id="recommendations">Recommendations</h2>
+<p>This module will generate maximum of 6 recommendations for the users. These recommendations are based on the total
+    views that each label has.</p>
+<p>In order to use this module, the user have to use <em>&quot;/recom&quot;</em> route.</p>
 
 </body>
 

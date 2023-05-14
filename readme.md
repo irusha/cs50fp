@@ -36,7 +36,7 @@ The files that is needed to be uploaded and the relevant labels of the currently
 > * Key = "labels"    Value = "Thriller"
 
 ### Return values
-This URL will return a JSON that contains the names of the failed files
+This URL will return a JSON that contains the names of the failed files as well as the names and the video ids of the completed videos.
 
 ### Failed files
 The following conditions will prevent the files from uploading
@@ -64,11 +64,10 @@ Will return the relevant videos in the respective page and the maximum page numb
 > The default number of items per page is 15
 
 ## Labels
-A video can have one or more videos. A label defines the characteristics of a video, and it will enable the users to categorize videos based on their characteristics. 
+A video can have one or more labels. A label defines the characteristics of a video, and it will enable the users to categorize videos based on their characteristics. 
 
 #### Labels are used to:
 * Categorize videos depending on their characteristics
-* Search for videos with a certain label
 * Generating recommendations for the user
 * Filter search results
 
@@ -97,9 +96,9 @@ In order to begin a search one or both of the following parameters must be given
 * q - Search query should be given to this parameter
 * filter - The labels that is needed to filter the search results must be given to this parameter
 
-> This module is not usable standalone and one or both of the above parameters should be used
+> This module is not usable standalone and one or both of the above parameters must be used
 
 ## Recommendations
-This module will generate maximum 6 recommendations for the users. The recommendations are based on the total views that each module has
+This module will generate maximum of 6 recommendations for the users. These recommendations are based on the total views that each label has.
 
 In order to use this module, the user have to use *"/recom"* route.
