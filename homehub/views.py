@@ -96,15 +96,23 @@ def check_label_is_used(label):
 
 def video_object(videos, request):
     data = []
+    host = request.get_host()
     for video in videos:
         data.append({
             "id": video.id,
             "title": video.title,
-            "preview": request.get_host() + "/" + video.prev_loc,
-            "thumbnail": request.get_host() + "/" + video.thumb_loc,
+            "preview": host + "/" + video.prev_loc,
+            "thumbnail": host + "/" + video.thumb_loc,
             "length": video.length,
             "views": video.views
         })
+    return data
+
+
+def video_sets_creator(videos):
+    data = []
+    for video in videos:
+        data.append((video.id, video.title, video.location, "/" + video.prev_loc, "/" + video.thumb_loc, video.date, video.length, video.views))
     return data
 
 
@@ -149,7 +157,7 @@ def labels(request):
         get_body = request.GET
         labels_list = get_body.getlist('labels')
         if len(labels_list) == 0 and 'video-id' not in get_body and 'remove' not in get_body:
-            _labels = Labels.objects.values('label')
+            _labels = Labels.objects.values('label').order_by('label')
             return JsonResponse({"labels": [label['label'] for label in _labels]})
 
         label_ids = get_set_label_ids(labels_list)
@@ -303,12 +311,13 @@ def paged_video_data(videos, request, page=-1, no_of_videos=15):
     starting_index = 0 if page == -1 else (page - 1) * no_of_videos
     ending_index = max_videos if page == -1 else page * no_of_videos
     data_dict = {"data": [], "pages": int(math.ceil(max_videos / no_of_videos))}
+    host = request.get_host()
     for row in videos[starting_index:ending_index]:
         data_dict['data'].append({
             "id": row[0],
             "title": row[1],
-            "preview": request.get_host() + "/" + row[3],
-            "thumbnail": request.get_host() + "/" + row[4],
+            "preview": host + "/" + row[3],
+            "thumbnail": host + "/" + row[4],
             "length": row[6],
             "views": row[7]
         })
@@ -365,17 +374,35 @@ def get_all_videos(request):
 def search(request):
     if request.method == "GET":
         get_body = request.GET
+        page = 1
         if 'filter' not in get_body and 'q' not in get_body:
             raise BadRequest("Invalid Request")
         query = ""
         if 'q' in get_body:
             query = get_body['q']
 
+        max_amount = 15
+
+        if 'max' in get_body:
+            try:
+                max_amount = int(get_body['max']) if int(get_body['max']) > 0 else 15
+            except ValueError:
+                max_amount = 15
+
+        if 'page' in get_body:
+            try:
+                page = int(get_body['page'])
+                if page < 1:
+                    raise BadRequest("Invalid page number")
+
+            except ValueError:
+                raise BadRequest("Invalid page number")
+
         filters = request.GET.getlist('filter')
         print(filters)
         videos = Video.objects.filter(title__contains=query)
         if len(filters) == 0:
-            data_dict = {"data": video_object(videos, request), "query": query}
+            data_dict = paged_video_data(video_sets_creator(videos), request, page, max_amount)
             return JsonResponse(data_dict)
         for _filter in filters:
             if not Labels.objects.filter(label=_filter).exists():
@@ -390,5 +417,6 @@ def search(request):
         for video in videos:
             if video.id in filtered_videos:
                 filtered_videos_obj.append(video)
-        data_dict = {"data": video_object(filtered_videos_obj, request), "query": query}
+
+        data_dict = paged_video_data(video_sets_creator(filtered_videos_obj), request, page, max_amount)
         return JsonResponse(data_dict)
