@@ -96,6 +96,10 @@ In order to begin a search one or both of the following parameters must be given
 * q - Search query should be given to this parameter
 * filter - The labels that is needed to filter the search results must be given to this parameter
 
+The search results are paginated. Therefore, the following parameters will enable the user to go through different pages.
+* max - Maximum number of items per page
+* page - number of the current page
+
 > This module is not usable standalone and one or both of the above parameters must be used
 
 ## Recommendations
