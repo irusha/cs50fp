@@ -1,4 +1,5 @@
 import math
+import time
 import traceback
 import uuid
 from datetime import date
@@ -13,7 +14,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import FileSystemStorage
 
-from .models import Video, Labels, VideoLabels
+from .models import Video, Labels, VideoLabels, DeleteRequests
 from .video_manager import *
 
 
@@ -207,15 +208,37 @@ def delete_videos(request):
     if request.method == "GET":
         get_body = request.GET
         if 'video-id' in get_body:
+            unique_id = str(uuid.uuid4().hex)
+            seconds = int(time.time())
+
             try:
                 req_id = int(get_body['video-id'])
             except ValueError:
                 raise BadRequest("Invalid video id")
 
-            if video_remover(req_id):
-                return JsonResponse({"status": "OK"})
+            del_req = DeleteRequests(unique_id, req_id, seconds)
+            del_req.save()
+
+            return JsonResponse({"videoId": req_id, "requestId": unique_id})
+        elif 'request-id' in get_body:
+            conf_id = get_body['request-id']
+            if DeleteRequests.objects.filter(confirmation_id=conf_id).exists():
+                del_req = DeleteRequests.objects.get(confirmation_id=conf_id)
+                vid_id = del_req.video
+                elapsed_time = int(time.time()) - int(del_req.requested_millis)
+
+                if elapsed_time < 120:
+                    if video_remover(vid_id):
+                        return JsonResponse({"status": "OK"})
+                    else:
+                        return JsonResponse({"status": "Failed"}, status=400)
+
+                else:
+                    return JsonResponse({"status": "TimeOut"}, status=400)
+
             else:
-                return JsonResponse({"status": "Failed"}, status=400)
+                raise BadRequest("Invalid request id")
+
         else:
             raise BadRequest("'video-id' not found")
 

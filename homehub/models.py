@@ -22,7 +22,7 @@ class VideoLabels(models.Model):
 
 
 class DeleteRequests(models.Model):
+    confirmation_id = models.CharField(max_length=50, primary_key=True)
     video = models.IntegerField()
-    confirmation_id = models.CharField(max_length=50)
     requested_millis = models.IntegerField()
 
