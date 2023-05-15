@@ -19,3 +19,10 @@ class Labels(models.Model):
 class VideoLabels(models.Model):
     video = models.IntegerField()
     label = models.IntegerField()
+
+
+class DeleteRequests(models.Model):
+    video = models.IntegerField()
+    confirmation_id = models.CharField(max_length=50)
+    requested_millis = models.IntegerField()
+

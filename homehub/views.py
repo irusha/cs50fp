@@ -188,19 +188,42 @@ def labels(request):
             raise BadRequest()
 
 
-def delete_videos():
-    pass
+def video_remover(vid_id):
+    if Video.objects.filter(id=vid_id).exists():
+        vid_labels = VideoLabels.objects.filter(video=vid_id)
+        for curr_label in vid_labels:
+            curr_label.delete()
+
+        video = Video.objects.get(id=vid_id)
+        video_path = os.path.dirname(video.location)[:-5]
+        video.delete()
+        remove_folder(video_path)
+        return True
+    else:
+        return False
+
+
+def delete_videos(request):
+    if request.method == "GET":
+        get_body = request.GET
+        if 'video-id' in get_body:
+            try:
+                req_id = int(get_body['video-id'])
+            except ValueError:
+                raise BadRequest("Invalid video id")
+
+            if video_remover(req_id):
+                return JsonResponse({"status": "OK"})
+            else:
+                return JsonResponse({"status": "Failed"}, status=400)
+        else:
+            raise BadRequest("'video-id' not found")
 
 
 def get_video_labels(video_id):
     label_ids = [obj.label for obj in VideoLabels.objects.filter(video=video_id)]
     _labels = [Labels.objects.get(id=obj).label for obj in label_ids]
     return _labels
-
-
-def remove_folder(folder):
-    if os.path.exists(folder) and os.path.isdir(folder):
-        shutil.rmtree(folder)
 
 
 @csrf_exempt

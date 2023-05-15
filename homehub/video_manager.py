@@ -9,6 +9,11 @@ def make_folder(path):
         os.makedirs(path)
 
 
+def remove_folder(folder):
+    if os.path.exists(folder) and os.path.isdir(folder):
+        shutil.rmtree(folder)
+
+
 def video_duration(file):
     video = cv2.VideoCapture(file)
     fps = video.get(cv2.CAP_PROP_FPS)  # OpenCV v2.x used "CV_CAP_PROP_FPS"
