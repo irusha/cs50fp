@@ -229,6 +229,7 @@ def delete_videos(request):
 
                 if elapsed_time < 120:
                     if video_remover(vid_id):
+                        update_views()
                         return JsonResponse({"status": "OK"})
                     else:
                         return JsonResponse({"status": "Failed"}, status=400)
